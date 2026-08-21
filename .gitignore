@@ -37,3 +37,6 @@ hf_cache/
 .idea/
 .vscode/
 *.swp
+
+# Submission archives are uploaded to the LMS/Drive, not stored in Git.
+*.zip
