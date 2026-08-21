@@ -187,3 +187,18 @@ def test_prompts_have_exactly_one_definition():
     assert generate.OPTIMIZED_PROMPT is config.OPTIMIZED_PROMPT
     gen_src = (ROOT / "src" / "labkit" / "generate.py").read_text(encoding="utf-8")
     assert "NAIVE_PROMPT = " not in gen_src, "generate.py must import, not redefine"
+
+
+def test_gatekeeper_checksum_is_line_ending_independent(tmp_path):
+    """A clean Windows checkout must not look like edited evaluation data."""
+    from scripts.verify import _sha
+
+    lf = tmp_path / "lf.jsonl"
+    crlf = tmp_path / "crlf.jsonl"
+    changed = tmp_path / "changed.jsonl"
+    lf.write_bytes(b'{"row": 1}\n{"row": 2}\n')
+    crlf.write_bytes(b'{"row": 1}\r\n{"row": 2}\r\n')
+    changed.write_bytes(b'{"row": 1}\n{"row": 3}\n')
+
+    assert _sha(lf) == _sha(crlf)
+    assert _sha(lf) != _sha(changed)

@@ -32,7 +32,12 @@ def check(name: str, status: str, detail: str = "") -> None:
 
 
 def _sha(path: pathlib.Path) -> str:
-    return hashlib.sha256(path.read_bytes()).hexdigest()[:16]
+    # Git may materialize tracked text files with CRLF on Windows even though the
+    # committed blob (and therefore checksums.json) uses LF.  Normalize only the
+    # line endings before hashing so the integrity check remains content-stable
+    # across platforms; any actual text change still changes the digest.
+    content = path.read_bytes().replace(b"\r\n", b"\n")
+    return hashlib.sha256(content).hexdigest()[:16]
 
 
 def _load_json(path: pathlib.Path):
